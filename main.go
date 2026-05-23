@@ -17,7 +17,8 @@ type GitHubUser struct {
 }
 
 func main() {
-	url := "https://api.github.com/users/Ez4aCE"
+	username := "Ez4aCE"
+	url := "https://api.github.com/users/" + username
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -26,17 +27,29 @@ func main() {
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode == 404 {
+		fmt.Println("❌ User not found. Check the username.")
+		return
+	} else if resp.StatusCode == 403 {
+		fmt.Println("⚠️ Rate limit exceeded. Please wait before trying again.")
+		return
+	} else if resp.StatusCode != 200 {
+		fmt.Printf("❌ Unexpected error: %s\n", resp.Status)
+		return
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		fmt.Println("Error reading response : ", err)
+		fmt.Println("❌ Error reading response : ", err)
 	}
 
 	var user GitHubUser
 	err = json.Unmarshal(body, &user)
 
 	if err != nil {
-		fmt.Println("Error unmarshalling data : ", err)
+		fmt.Println("❌ Error unmarshalling data : ", err)
 		return
 	}
 
